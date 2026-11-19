@@ -16,7 +16,7 @@ def Connection_Server():
         password=getpass("DB 비밀번호: "),
     )
 
-    print("서버 연결 성공" if conn is not None else "서버 연결 실패")
+    print("서버 연결 실패" if conn is None else "서버 연결 성공")
 
 # DB 선택
 def Select_DB():
@@ -62,7 +62,7 @@ def Open_Table():
     Query_Commend(f"SELECT * FROM {table_name};")
 
 # 쿼리문 입력 조회 함수
-def Query_Commend(Commend = None, Method = None):
+def Query_Commend(Commend, Method = None):
     if Method is None:
         if  "SELECT" in Commend or "SHOW" in Commend:
             Method = True
@@ -72,6 +72,7 @@ def Query_Commend(Commend = None, Method = None):
     with conn.cursor() as cursor:
         cursor.execute(Commend)
         answer = cursor.fetchall()
+
         if type(answer) == tuple or type(answer) == list and Method:
             for i in answer:
                 print(i)
@@ -92,16 +93,12 @@ def Main():
 
     # Table 조회
     Query_Commend("SHOW TABLES;")
-
-    # Table 열람?
     Open_Table()
 
-    # timestemp 컬럼 출력
-    Query_Commend("SELECT col_timestemp FROM tbl_test2;")
-    # 테스트 컬럼 추가
-    Query_Commend("ALTER TABLE tbl_test2 ADD COLUMN IF NOT EXISTS col_PythonTestCol VARCHAR(10);")
-    # 테스트 컬럼 삭제
-    Query_Commend("ALTER TABLE tbl_test2 DROP COLUMN IF EXISTS col_PythonTestCol;")
+    # 쿼리 명령어
+    Query_Commend("SELECT col_timestemp FROM tbl_test2;") # timestemp 컬럼 출력
+    Query_Commend("ALTER TABLE tbl_test2 ADD COLUMN IF NOT EXISTS col_PythonTestCol VARCHAR(10);") # 테스트 컬럼 추가
+    Query_Commend("ALTER TABLE tbl_test2 DROP COLUMN IF EXISTS col_PythonTestCol;") # 테스트 컬럼 삭제
 
     # DB 종료
     Close_DB()
