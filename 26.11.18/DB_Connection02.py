@@ -5,47 +5,105 @@ from getpass import getpass
 # DB 연결 변수 선언 및 초기화
 conn = None
 
-def Connection_DB():
+def Connection_Server():
+    global conn # 전역변수 설정
+
+    # pymysql.connect() = 서버 연결을 위한 함수
+    conn = pymysql.connect(
+        host="127.0.0.1",
+        port=3306,
+        user="root",
+        password=getpass("DB 비밀번호: "),
+    )
+
+    print("서버 연결 성공" if conn is not None else "서버 연결 실패")
+
+# DB 선택
+def Select_DB():
     global conn
 
-    try:
-        # pymysql.connect() = DB 연결을 위한 함수
-        conn = pymysql.connect(
-            host="127.0.0.1",
-            port=3306,
-            user="root",
-            password=getpass("DB 비밀번호: "),
-            database="testdb2"
-        )
+    databases = Query_Commend("SHOW DATABASES;")
+    
+    print("\n=== DB 목록 ===")
 
-    # DB 연결 실패 시 예외 처리
-    except pymysql.MySQLError as e:
-        print("DB 연결 실패:", e)
+    for i, db in enumerate(databases, start=1):
+        print(f"{i}. {db[0]}")
 
-    # DB 상태 확인
-    finally:
-        # DB 연결 후 현재 DB 확인
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT DATABASE();") # 현재 연결된 DB 확인
-            print("현재 DB:", cursor.fetchone()) # 현재 DB 출력 / 튜플형태로 반환됨
+    while True:
+        choice = int(input("\nDB 번호 선택: "))
 
+        if 1 <= choice <= len(databases):
+            break
 
+    db_name = databases[choice - 1][0]
+    conn.select_db(db_name)
+
+# DB 닫기
 def Close_DB():
     if conn is not None:
         conn.close()
 
-def Main():
-    Connection_DB()
+# 테이블 확인
+def Open_Table():
+    tables = Query_Commend("SHOW TABLES;")
 
-    # DB 연결 후 테이블 내용 확인
+    print("\n === 테이블 목록 ===")
+
+    for i, table in enumerate(tables, start=1):
+        print(f"{i}. {table[0]}")
+
+    while True:
+        tbl_choice = int(input("\n 테이블 번호 선택: "))
+        if 1 <= tbl_choice <= len(tables):
+               break
+
+    table_name = tables[tbl_choice - 1][0]
+
+    Query_Commend(f"SELECT * FROM {table_name};")
+
+# 쿼리문 입력 조회 함수
+def Query_Commend(Commend = None, Method = None):
+    if Method is None:
+        if  "SELECT" in Commend or "SHOW" in Commend:
+            Method = True
+        else:
+            Method = False
+
     with conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM tbl_test2;")
-        result = cursor.fetchall()
-        print(result)
+        cursor.execute(Commend)
+        answer = cursor.fetchall()
+        if type(answer) == tuple or type(answer) == list and Method:
+            for i in answer:
+                print(i)
+            return answer
+        elif type(answer) == str or Method == False:
+            conn.commit()
+            print("커밋 완료")
 
 
 
+def Main():
+    # 서버 연결
+    Connection_Server()
 
+    # DB 조회
+    Query_Commend("SHOW DATABASES;")
+    Select_DB()
+
+    # Table 조회
+    Query_Commend("SHOW TABLES;")
+
+    # Table 열람?
+    Open_Table()
+
+    # timestemp 컬럼 출력
+    Query_Commend("SELECT col_timestemp FROM tbl_test2;")
+    # 테스트 컬럼 추가
+    Query_Commend("ALTER TABLE tbl_test2 ADD COLUMN IF NOT EXISTS col_PythonTestCol VARCHAR(10);")
+    # 테스트 컬럼 삭제
+    Query_Commend("ALTER TABLE tbl_test2 DROP COLUMN IF EXISTS col_PythonTestCol;")
+
+    # DB 종료
     Close_DB()
 
 Main()
