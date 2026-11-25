@@ -1,3 +1,7 @@
+import inspect
+import os
+
+
 class color:
     green = "\033[92m"
     red = "\033[91m"
@@ -9,4 +13,8 @@ class color:
 
 
 def log(message: str, col: str = color.white) -> None:
-    print(f"{col}Log : {message}{color.white}")
+    frame = inspect.stack()[1]
+    filename = os.path.basename(frame.filename)
+    lineno = frame.lineno
+
+    print(f"{col}[{filename}:{lineno}] Log : {message}{color.white}")

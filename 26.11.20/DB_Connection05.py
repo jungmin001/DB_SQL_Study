@@ -99,3 +99,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+log("Hi DebugHelper! :D", color.pink)
