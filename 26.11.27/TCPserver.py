@@ -20,7 +20,7 @@ class machinedata(Structure):
 HOST = "0.0.0.0"
 PORT = 1234
 
-def query_command(conn, command, is_method = None, params  =None):
+def query_command(conn, command, is_method = None, params = None):
     if is_method is None:
         is_method = "SELECT" in command or "SHOW" in command
 
@@ -66,6 +66,7 @@ else:
         query_command(conn, "USE testdb4;")
         query_command(conn, """
                         CREATE TABLE IF NOT EXISTS machine_data (
+                            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                             id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             type_bool BOOLEAN,
                             type_char CHAR(1),
@@ -122,16 +123,23 @@ else:
             result = query_command(
                 conn,
                 """
-                SELECT * FROM machine_data
-                WHERE id = LAST_INSERT_ID()
+                SELECT * FROM machine_data WHERE id = LAST_INSERT_ID()
                 """
             )
 
             for row in result:
-                print(row)
+                created_at = row[0].strftime("%Y-%m-%d %H:%M:%S")
+                print(created_at, *row[1:])
 
             time.sleep(1)
 
 finally:
-    server.close()
+    query_command(conn, "DROP TABLE IF EXISTS testdb4.machine_data;")
+    if conn is not None:
+        conn.close()
+    if cli is not None:
+        cli.close()
+    if server is not None:
+        server.close()
+
     log("Server Close", color.pink)

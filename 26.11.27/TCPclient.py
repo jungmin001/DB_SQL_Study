@@ -17,11 +17,6 @@ class machinedata(Structure):
         ("type_double", c_double),  # 8byte
     ]
 
-
-HOST = "127.0.0.1"
-PORT = 1234
-
-
 def clinput():
     machine = machinedata()
 
@@ -37,36 +32,28 @@ def clinput():
 
     return machine
 
-
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+HOST = "127.0.0.1"
+PORT = 1234
 
 try:
     log("Try Connecting Server...", color.green)
 
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((HOST, PORT))
 
-except:
-    log("Server Connecting fail!!", color.red)
+except Exception as e:
+    log(f"Server Connecting fail!! {e}", color.red)
 
 else:
     log("Server Connecting Complete!! :D", color.green)
 
     while True:
-        # 랜덤 구조체 데이터 생성
         machine = clinput()
-
-        # 구조체를 바이너리 데이터로 변환
         data = bytes(machine)
-
-        # 서버에 데이터 전송
         client.sendall(data)
 
-        # 전송한 데이터 출력
         for name, dtype in machinedata._fields_:
             print(name, ":", getattr(machine, name))
-
-        print("Send Size:", len(data), "Byte")
-        print("----------------------------")
 
         time.sleep(1)
 

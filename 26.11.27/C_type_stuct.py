@@ -14,6 +14,6 @@ class machinedata(Structure):
         ]
 
 for name, dtype in machinedata._fields_:
-    print(name, "Size:", sizeof(dtype),)
+    print(name, "Size:", sizeof(dtype))
 
 print("\nTotal Size:", sizeof(machinedata))
