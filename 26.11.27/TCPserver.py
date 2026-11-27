@@ -17,7 +17,7 @@ class machinedata(Structure):
         ("type_double", c_double),  # 8byte
         ]
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 1234
 
 def query_command(conn, command, is_method = None, params  =None):
@@ -40,14 +40,14 @@ try:
 
     cli, adr = server.accept()
 
-except:
-    log("Server Connecting fail!!", color.red)
+except Exception as e:
+    log(f"Server Connecting fail!! {e}", color.red)
 
 else:
     log("Server Connecting Complete!! :D", color.green)
 
     try:
-        log("Try Connecting DB...")
+        log("Try Connecting DB...", color.green)
 
         conn = pymysql.connect(
             host    = "127.0.0.1",
@@ -57,17 +57,38 @@ else:
             database= "testdb4"
         )
 
-    except:
-        log("DB Connecting fail!!", color.red)
+    except Exception as e:
+        log(f"DB Connecting fail!! {e}", color.red)
 
     else:
         log("DB Connecting Complete!! :D", color.green)
 
+        query_command(conn, "USE testdb4;")
+        query_command(conn, """
+                        CREATE TABLE IF NOT EXISTS machine_data (
+                            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                            type_bool BOOLEAN,
+                            type_char CHAR(1),
+                            type_int8 TINYINT,
+                            type_int16 SMALLINT,
+                            type_int INT,
+                            type_float FLOAT,
+                            type_double DOUBLE)""")
+        query_command(conn,"""
+                            ALTER TABLE machine_data
+                                ADD COLUMN IF NOT EXISTS id INT AUTO_INCREMENT PRIMARY KEY FIRST,
+                                ADD COLUMN IF NOT EXISTS type_bool BOOLEAN,
+                                ADD COLUMN IF NOT EXISTS type_char CHAR(1),
+                                ADD COLUMN IF NOT EXISTS type_int8 TINYINT,
+                                ADD COLUMN IF NOT EXISTS type_int16 SMALLINT,
+                                ADD COLUMN IF NOT EXISTS type_int INT,
+                                ADD COLUMN IF NOT EXISTS type_float FLOAT,
+                                ADD COLUMN IF NOT EXISTS type_double DOUBLE;""")
+        query_command(conn,"DESC machine_data;")
+
         while True:
             data = cli.recv(24)
             if not data: break
-
-            text = data.decode("utf-8") # tuple
 
             machine = machinedata.from_buffer_copy(data)
 
@@ -95,7 +116,7 @@ else:
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
-                params
+                params = params
             )
 
             result = query_command(
