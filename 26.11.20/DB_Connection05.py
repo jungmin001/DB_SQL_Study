@@ -14,7 +14,7 @@ def connection_server():
             database="testdb4",                 # 데이터 베이스
         )  
     except:
-        log("DB connection fail!", color.red)                  # 연결 실패 시 로그, 리턴으로 함수 종료
+        log("DB connection fail!", color.red)   # 연결 실패 시 로그, 리턴으로 함수 종료
         return None
     else:
         log("DB connection complete!", color.green)  # 성공 시 로그

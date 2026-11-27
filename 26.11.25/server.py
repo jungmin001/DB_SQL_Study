@@ -1,6 +1,6 @@
 import socket
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 1234
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #ipv4, tcp 소켓 생성
